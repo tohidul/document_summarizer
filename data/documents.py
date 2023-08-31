@@ -1,7 +1,6 @@
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
 
-Base = declarative_base()
+from data import Base, session
 
 class Documents(Base):
     __tablename__ = 'documents'
@@ -12,3 +11,5 @@ class Documents(Base):
 
 def insert_documents(document_path_list: list):
     document_list = [Documents(document_path=document_path) for document_path in document_path_list]
+    session.bulk_save_objects(document_list)
+    session.commit()
