@@ -7,3 +7,4 @@ DB_CONFIG = {
     'database': 'document_summarizer',
     'query': {'client_encoding': 'utf8'}
 }
+
