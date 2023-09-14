@@ -3,6 +3,7 @@ from data import init_db, create_table_if_not_exist, session
 from data.documents import insert_documents
 from celery import Celery
 
+
 app = Flask(__name__)
 app.config.from_envvar('CONFIG_FILE')
 
@@ -24,10 +25,12 @@ celery_app = _make_celery_app(app)
 @app.route('/')
 def hello_world():  # put application's code here
     return 'Hello World!'
-
-@app.route('/summarize', methods=["POST"])
-def summarize():
-    return 'Hello World!'
+# app.register_blueprint()
+# @app.route('/summarize', methods=["POST"])
+# def summarize():
+#     background_task = summarize_documents_task()
+#     task_id = background_task.delay()
+#     return task_id
 
 @app.route('/add_documents', methods=["POST"])
 def add_documents():
@@ -47,6 +50,8 @@ def add_documents():
 @app.route('/get_summary', methods=["GET"])
 def get_summary():
     return 'Hello World!'
+
+import endpoints
 
 if __name__ == '__main__':
     app.run()

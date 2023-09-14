@@ -3,6 +3,8 @@ from data import documents
 from summarize import filter_tokens, count_word_frquency, weighing_sentences, get_summarized_text
 import spacy
 import os
+import time
+import logging
 
 nlp = spacy.load('en_core_web_sm')
 
@@ -29,9 +31,11 @@ def summarize_document(document_path):
 
 @celery_app.task
 def summarize_documents_task():
+    start_time = time.time()
     list_of_documnents = documents.get_documents()
     list_of_summarized_documents = []
-
+    total = len(list_of_documnents)
+    processed = 0
     for document in list_of_documnents:
         summarized_document_path = summarize_document(document["document_path"])
         summarized_document_info = {
@@ -39,8 +43,20 @@ def summarize_documents_task():
             "summarized_document_path":  summarized_document_path
         }
         list_of_summarized_documents.append(summarized_document_info)
+        processed += 1
+        if processed % 100 == 0:
+            summarize_documents_task.update_state(state="PROGRESS", meta={"processed": processed, "total":total})
+
 
     documents.add_summarized_document_path(list_of_summarized_documents)
+    response = {
+        "processed": processed,
+        "total": total
+    }
+    end_time = time.time()
+
+    logging.info("time taken to summarize all documents: {} seconds".format(end_time-start_time))
+    return response
 
 
 
