@@ -20,7 +20,7 @@ def summarize_document(document_path):
     summarized_text = get_summarized_text(sentence_strengths, number_of_sentence=3)
     directory_path_of_file = os.path.abspath(os.path.dirname(document_path))
     document_file_name = os.path.basename(document_path)
-    document_file_name_without_extension = document_file_name.split(".")[-1]
+    document_file_name_without_extension = document_file_name.split(".")[0]
     document_summary_file_name = document_file_name_without_extension+"_summmarized.txt"
     document_summary_file_path = os.path.join(directory_path_of_file, document_summary_file_name)
     with open(document_summary_file_path, "w") as summarized_file_path:
@@ -57,6 +57,11 @@ def summarize_documents_task():
 
     logging.info("time taken to summarize all documents: {} seconds".format(end_time-start_time))
     return response
+
+@celery_app.task
+def get_documents():
+
+
 
 
 

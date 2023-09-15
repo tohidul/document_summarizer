@@ -36,6 +36,7 @@ def get_documents() -> list:
 def add_summarized_document_path(list_of_document_id_to_summarized_path_dictionary: list) -> bool:
     try:
         session.bulk_update_mappings(Documents, list_of_document_id_to_summarized_path_dictionary)
+        session.commit()
         return True
     except exc.SQLAlchemyError:
         return False
