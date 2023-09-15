@@ -8,6 +8,8 @@ import logging
 
 nlp = spacy.load('en_core_web_sm')
 
+def split_document_list(input_list, chunk_size):
+    return [input_list[i:i + chunk_size] for i in range(0, len(input_list), chunk_size)]
 
 def summarize_document(document_path):
     with open(document_path, "r") as document_file:
@@ -60,6 +62,8 @@ def summarize_documents_task():
 
 @celery_app.task
 def get_documents():
+    start_time = time.time()
+    list_of_documnents = documents.get_documents()
 
 
 
