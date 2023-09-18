@@ -84,6 +84,7 @@ def summarize(document_list, index):
 
     return list_of_summarized_documents, start_time
 
+
 @celery_app.task
 def update_db(list_of_summarized_documents_in_chunks):
     list_of_all_summarized_documents = []

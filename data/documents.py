@@ -42,3 +42,8 @@ def add_summarized_document_path(list_of_document_id_to_summarized_path_dictiona
         return False
 
 
+def get_document_count() -> int:
+    row_count = session.query(Documents).count()
+    return row_count
+
+
