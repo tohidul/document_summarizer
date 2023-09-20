@@ -22,9 +22,8 @@ def _make_celery_app(flask_app):
 celery_app = _make_celery_app(app)
 
 
-
-
 import endpoints
+
 
 if __name__ == '__main__':
     app.run()
