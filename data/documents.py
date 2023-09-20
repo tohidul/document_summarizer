@@ -46,4 +46,36 @@ def get_document_count() -> int:
     row_count = session.query(Documents).count()
     return row_count
 
+def get_summarized_document_text(list_of_document_ids):
+    query_result = session.query(Documents.id, Documents.summarized_document_path).filter(Documents.id.in_(list_of_document_ids)).all()
 
+    summarized_text_list = []
+
+    for result in query_result:
+        summarized_text_path = result.summarized_document_path
+        if summarized_text_path:
+            text, error_message = get_text_from_file_path(summarized_text_path)
+        else:
+            text = None,
+            error_message = "missing summarized text path in db"
+
+        summary = {
+            "document_id": result.id,
+            "summarized_text": text,
+            "error_message": error_message
+        }
+        summarized_text_list.append(summary)
+    return summarized_text_list
+
+
+def get_text_from_file_path(text_path):
+    text = ""
+    error_message = None
+
+    try:
+        with open(text_path, "r") as text_file:
+            text = text_file.read()
+    except IOError:
+        error_message = "Could not read sumnmarized text file"
+
+    return text, error_message

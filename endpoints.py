@@ -1,8 +1,9 @@
 from app import app
 from flask import request
 from background_task import summarize_documents_task, get_documents, summarize, update_db
-from data.documents import get_document_count
+from data.documents import get_document_count, get_summarized_document_text
 from celery import chain, group
+from data.documents import insert_documents
 
 
 @app.route('/summarize', methods=["POST"])
@@ -12,18 +13,36 @@ def summarize_documents():
     if total_documents < number_of_concurrent_task:
         number_of_concurrent_task = total_documents
     if number_of_concurrent_task>1:
-        result = chain(get_documents.s(chunk_size=number_of_concurrent_task),
+        background_task = chain(get_documents.s(chunk_size=total_documents//number_of_concurrent_task),
                        group(summarize.s(index=i) for i in range(number_of_concurrent_task)),
                        update_db.s())
-        task_id = result.apply_async()
-        response = {
-            "task_id": str(task_id)
-        }
     else:
-
         background_task = summarize_documents_task
-        result = background_task.delay()
-        response = {
-            "task_id": result.task_id
-        }
+    task_id = background_task.apply_async()
+    response = {
+        "task_id": str(task_id)
+    }
     return response
+
+
+@app.route('/add_documents', methods=["POST"])
+def add_documents():
+    list_of_docs = request.form.getlist("document_list")
+    response = {
+        "document_inserted": False
+    }
+    if not list_of_docs:
+        return response
+    try:
+        insert_documents(list_of_docs)
+        response["document_inserted"] = True
+        return response
+    except:
+        return response
+
+
+@app.route('/get_summary', methods=["GET"])
+def get_summary():
+    list_of_document_ids = request.form.getlist("document_id_list")
+    result = get_summarized_document_text(list_of_document_ids)
+    return result

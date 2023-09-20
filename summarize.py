@@ -53,12 +53,3 @@ def get_summarized_text(sentence_strength, number_of_sentence):
     summary = ' '.join(final_sentences)
     return summary
 
-# doc = nlp(document)
-# keywords = filter_tokens(doc)
-# word_freq = count_word_frquency(keywords)
-# sentence_strength = weighing_sentences(doc, word_freq)
-# print(get_summarized_text(sentence_strength, 3))
-
-# print(word_freq)
-# n = len(list(doc.sents))
-# print(n)

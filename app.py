@@ -1,6 +1,6 @@
-from flask import Flask, request
+from flask import Flask
 from data import init_db, create_table_if_not_exist, session
-from data.documents import insert_documents
+
 from celery import Celery
 
 
@@ -22,34 +22,7 @@ def _make_celery_app(flask_app):
 celery_app = _make_celery_app(app)
 
 
-@app.route('/')
-def hello_world():  # put application's code here
-    return 'Hello World!'
-# app.register_blueprint()
-# @app.route('/summarize', methods=["POST"])
-# def summarize():
-#     background_task = summarize_documents_task()
-#     task_id = background_task.delay()
-#     return task_id
 
-@app.route('/add_documents', methods=["POST"])
-def add_documents():
-    list_of_docs = request.form.getlist("document_list")
-    response = {
-        "document_inserted": False
-    }
-    if not list_of_docs:
-        return response
-    try:
-        insert_documents(list_of_docs)
-        response["document_inserted"] = True
-        return response
-    except:
-        return response
-
-@app.route('/get_summary', methods=["GET"])
-def get_summary():
-    return 'Hello World!'
 
 import endpoints
 
