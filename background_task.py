@@ -5,6 +5,7 @@ import spacy
 import os
 import time
 import logging
+import concurrent.futures
 
 nlp = spacy.load('en_core_web_sm')
 
@@ -102,6 +103,36 @@ def update_db(list_of_summarized_documents_in_chunks):
 
     end_time = time.time()
     logging.info("time taken to summarize all documents: {} seconds".format(end_time - start_time))
+    return response
+
+
+@celery_app.task
+def summarize_documents_task_multithreading():
+    start_time = time.time()
+    list_of_documnents = documents.get_documents()
+    list_of_summarized_documents = []
+    total = len(list_of_documnents)
+    processed = 0
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+        futures = [executor.submit(summarize_document, document["document_path"]) for document in list_of_documnents]
+        results = [future.result() for future in concurrent.futures.as_completed(futures)]
+    for result in results:
+        summarized_document_path = summarize_document(document["document_path"])
+        summarized_document_info = {
+            "id": document["document_id"],
+            "summarized_document_path":  summarized_document_path
+        }
+        list_of_summarized_documents.append(summarized_document_info)
+
+    documents.add_summarized_document_path(list_of_summarized_documents)
+    response = {
+        "processed": processed,
+        "total": total
+    }
+    end_time = time.time()
+
+    logging.info("time taken to summarize all documents: {} seconds".format(end_time-start_time))
     return response
 
 
