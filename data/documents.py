@@ -46,6 +46,7 @@ def get_document_count() -> int:
     row_count = session.query(Documents).count()
     return row_count
 
+
 def get_summarized_document_text(list_of_document_ids):
     query_result = session.query(Documents.id, Documents.summarized_document_path).filter(Documents.id.in_(list_of_document_ids)).all()
 
