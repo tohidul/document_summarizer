@@ -1,18 +1,22 @@
 from urllib.parse import quote
 
+
 DB_CONFIG = {
-    'drivername': 'postgresql',
-    'host': 'localhost',
-    'port': 5432,
-    'username': 'postgres',
-    'password': 'envizemssqlpassword123@@',
-    'database': 'document_summarizer',
+    'drivername': '<db_driver>',
+    'host': '<host_name>',
+    'port': '<port>',
+    'username': '<db_user_name>',
+    'password': '<db_password>',
+    'database': '<db_name>',
     'query': {'client_encoding': 'utf8'}
 }
 
+
+#Used rabbitmq as broker. You can also use redis
+#Both db table or redis can be used to store celery result
 CELERY_CONFIG = {
-     'CELERY_BROKER_URL': 'memory://localhost/',
-     'BROKER_URL': 'amqp://test_user:test_user@localhost:5672/summarizer',
-     'CELERY_RESULT_BACKEND': 'db+postgresql://postgres:%s@localhost:5432/document_summarizer' % quote('envizemssqlpassword123@@')
+     'CELERY_BROKER_URL': 'memory://<broker_host>/',
+     'BROKER_URL': 'amqp://<rabbitmq_user>:<rabbitmq_password>@<broker_host>:5672/<virtual_host_name>',
+     'CELERY_RESULT_BACKEND': '<celery backed config>'
 }
 
