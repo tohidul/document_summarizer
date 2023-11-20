@@ -1,6 +1,6 @@
 from app import app
 from flask import request
-from background_task import summarize_documents_task, get_documents, summarize, update_db
+from background_task import summarize_documents_task, get_documents, summarize, update_db, summarize_documents_task_multithreading
 from data.documents import get_document_count, get_summarized_document_text
 from celery import chain, group
 from data.documents import insert_documents
@@ -9,6 +9,8 @@ from data.documents import insert_documents
 @app.route('/summarize', methods=["POST"])
 def summarize_documents():
     number_of_concurrent_task = request.form.get("number_of_concurrent_task", type=int, default=1)
+    is_multi_threaded = request.form.get("is_multithreaded", type=bool, default=False)
+
     total_documents = get_document_count()
     if total_documents < number_of_concurrent_task:
         number_of_concurrent_task = total_documents
@@ -17,7 +19,10 @@ def summarize_documents():
                        group(summarize.s(index=i) for i in range(number_of_concurrent_task)),
                        update_db.s())
     else:
-        background_task = summarize_documents_task
+        if is_multi_threaded:
+            background_task = summarize_documents_task_multithreading
+        else:
+            background_task = summarize_documents_task
     task_id = background_task.apply_async()
     response = {
         "task_id": str(task_id)
@@ -43,6 +48,6 @@ def add_documents():
 
 @app.route('/get_summary', methods=["GET"])
 def get_summary():
-    list_of_document_ids = request.form.getlist("document_id_list")
+    list_of_document_ids = request.args.getlist("document_id_list")
     result = get_summarized_document_text(list_of_document_ids)
     return result

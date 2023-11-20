@@ -17,6 +17,7 @@ def split_document_list(input_list, chunk_size):
 def summarize_document(document_path):
     with open(document_path, "r") as document_file:
         document_content = document_file.read()
+    nlp.max_length = len(document_content) + 100
     document = nlp(document_content)
 
     keywords = filter_tokens(document)
@@ -113,17 +114,26 @@ def summarize_documents_task_multithreading():
     list_of_summarized_documents = []
     total = len(list_of_documnents)
     processed = 0
+    document_path_to_id = {}
+    for document in list_of_documnents:
+        doc_id = document["document_id"]
+        doc_path_summarized = document["summarized_document_path"]
+        if doc_path_summarized in document_path_to_id.keys():
+            document_path_to_id[doc_path_summarized].append(doc_id)
+        else:
+            document_path_to_id[doc_path_summarized] = [doc_id]
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
         futures = [executor.submit(summarize_document, document["document_path"]) for document in list_of_documnents]
         results = [future.result() for future in concurrent.futures.as_completed(futures)]
     for result in results:
-        summarized_document_path = summarize_document(document["document_path"])
-        summarized_document_info = {
-            "id": document["document_id"],
-            "summarized_document_path":  summarized_document_path
-        }
-        list_of_summarized_documents.append(summarized_document_info)
+        summarized_document_path = result
+        for doc_id in document_path_to_id[summarized_document_path]:
+            summarized_document_info = {
+                "id": doc_id,
+                "summarized_document_path":  summarized_document_path
+            }
+            list_of_summarized_documents.append(summarized_document_info)
 
     documents.add_summarized_document_path(list_of_summarized_documents)
     response = {
